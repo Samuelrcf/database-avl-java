@@ -1,16 +1,20 @@
 package entities;
 
-public class No {
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+public class No implements Serializable {
+	private static final long serialVersionUID = 1L;
 
     private int codigo;          
     private String nome;        
     private String descricao;    
-    private String horaSolicitacao; 
+    private LocalDateTime horaSolicitacao; 
     private int alturaNo;
     private No esq;
     private No dir;
 
-    public No(int codigo, String nome, String descricao, String horaSolicitacao) {
+    public No(int codigo, String nome, String descricao, LocalDateTime horaSolicitacao) {
         this.codigo = codigo;
         this.nome = nome;
         this.descricao = descricao;
@@ -44,11 +48,11 @@ public class No {
         this.descricao = descricao;
     }
 
-    public String getHoraSolicitacao() {
+    public LocalDateTime getHoraSolicitacao() {
         return horaSolicitacao;
     }
 
-    public void setHoraSolicitacao(String horaSolicitacao) {
+    public void setHoraSolicitacao(LocalDateTime horaSolicitacao) {
         this.horaSolicitacao = horaSolicitacao;
     }
 
@@ -74,5 +78,15 @@ public class No {
 
     public void setDir(No dir) {
         this.dir = dir;
+    }
+    
+    @Override
+    public String toString() {
+        return "No{" +
+                "codigo=" + codigo +
+                ", nome='" + nome + '\'' +
+                ", descricao='" + descricao + '\'' +
+                ", horaSolicitacao=" + horaSolicitacao +
+                '}';
     }
 }
