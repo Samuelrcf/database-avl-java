@@ -2,6 +2,7 @@ package entities;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class OrdemDeServico implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -33,8 +34,9 @@ public class OrdemDeServico implements Serializable {
         return descricao;
     }
 
-    public LocalDateTime getHoraSolicitacao() {
-        return horaSolicitacao;
+    public String getHoraSolicitacao() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        return horaSolicitacao.format(formatter);
     }
 
     @Override
@@ -43,7 +45,7 @@ public class OrdemDeServico implements Serializable {
                 "codigo=" + codigo +
                 ", nome='" + nome + '\'' +
                 ", descricao='" + descricao + '\'' +
-                ", horaSolicitacao=" + horaSolicitacao +
+                ", horaSolicitacao=" + getHoraSolicitacao() +
                 '}';
     }
 }
