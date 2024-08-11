@@ -79,9 +79,7 @@ public class Cache implements Serializable {
 	    if (!arquivoCache.exists()) {
 	        try {
 	            if (arquivoCache.createNewFile()) {
-	                System.out.println("Arquivo de cache criado com sucesso: " + nomeArquivo);
 	            } else {
-	                System.out.println("Não foi possível criar o arquivo de cache: " + nomeArquivo);
 	            }
 	        } catch (IOException e) {
 	            e.printStackTrace();
@@ -104,14 +102,11 @@ public class Cache implements Serializable {
 	                        break;
 	                    }
 	                }
-	                System.out.println("Cache carregada com sucesso de " + nomeArquivo);
 	            } else {
-	                System.out.println("O arquivo de cache está vazio. Inicializando cache padrão.");
 	                cache = new No[20];
 	                currentIndex = 0;
 	            }
 	        } catch (EOFException e) {
-	            System.out.println("Arquivo de cache vazio ou corrompido. Inicializando cache padrão.");
 	            cache = new No[20];
 	            currentIndex = 0;
 	        } catch (IOException | ClassNotFoundException e) {

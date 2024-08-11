@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 import entities.No;
+import exceptions.ResourceAlreadyExistsException;
+import exceptions.ResourceNotFoundException;
 
 public class AVL implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -28,7 +30,8 @@ public class AVL implements Serializable {
 		carregarArvoreDeArquivo(caminhoArquivo);
 		if (buscarNaArvore(raiz, codigo) != null) {
 			System.out.println("Código " + codigo + " já existe na árvore. Inserção recusada.");
-			return;
+			registrarLog("Inserção recusada", false);
+			throw new ResourceAlreadyExistsException("Código " + codigo + " já existe na árvore. Inserção recusada.");
 		}
 		boolean[] rotacao = new boolean[1];
 		raiz = inserir(raiz, codigo, nome, descricao, horaSolicitacao, rotacao);
@@ -58,7 +61,7 @@ public class AVL implements Serializable {
 		if (noExistente == null) {
 			System.out.println("Código " + codigo + " não encontrado na árvore. Remoção ignorada.");
 			registrarLog("Remoção Ignorada", false);
-			return;
+			throw new ResourceNotFoundException("Código " + codigo + " não encontrado na árvore. Remoção ignorada.");
 		}
 
 		boolean[] rotacao = new boolean[1];
@@ -111,7 +114,7 @@ public class AVL implements Serializable {
 		if (noExistente == null) {
 			System.out.println("Código " + codigo + " não encontrado na árvore. Alteração ignorada.");
 			registrarLog("Alteração Ignorada", false);
-			return;
+			throw new ResourceNotFoundException("Código " + codigo + " não encontrado na árvore. Alteração ignorada.");
 		}
 
 		noExistente.setNome(novoNome);
@@ -127,36 +130,32 @@ public class AVL implements Serializable {
 	}
 
 	private No rebalancear(No arv, boolean[] rotacao) {
-		if (arv == null)
-			return arv;
+	    if (arv == null)
+	        return arv;
 
-		arv.setAlturaNo(1 + maior(altura(arv.getEsq()), altura(arv.getDir())));
-		int fb = obterFB(arv);
+	    arv.setAlturaNo(1 + maior(altura(arv.getEsq()), altura(arv.getDir())));
 
-		if (fb > 1 && obterFB(arv.getEsq()) >= 0) {
-			rotacao[0] = true;
-			return rotacaoDireitaSimples(arv);
-		}
+	    int fb = obterFB(arv);
 
-		if (fb < -1 && obterFB(arv.getDir()) <= 0) {
-			rotacao[0] = true;
-			return rotacaoEsquerdaSimples(arv);
-		}
+	    if (fb > 1 && obterFB(arv.getEsq()) >= 0) {
+	        rotacao[0] = true;
+	        arv = rotacaoDireitaSimples(arv);
+	    } else if (fb < -1 && obterFB(arv.getDir()) <= 0) {
+	        rotacao[0] = true;
+	        arv = rotacaoEsquerdaSimples(arv);
+	    } else if (fb > 1 && obterFB(arv.getEsq()) < 0) {
+	        arv.setEsq(rotacaoEsquerdaSimples(arv.getEsq()));
+	        rotacao[0] = true;
+	        arv = rotacaoDireitaSimples(arv);
+	    } else if (fb < -1 && obterFB(arv.getDir()) > 0) {
+	        arv.setDir(rotacaoDireitaSimples(arv.getDir()));
+	        rotacao[0] = true;
+	        arv = rotacaoEsquerdaSimples(arv);
+	    }
 
-		if (fb > 1 && obterFB(arv.getEsq()) < 0) {
-			arv.setEsq(rotacaoEsquerdaSimples(arv.getEsq()));
-			rotacao[0] = true;
-			return rotacaoDireitaSimples(arv);
-		}
-
-		if (fb < -1 && obterFB(arv.getDir()) > 0) {
-			arv.setDir(rotacaoDireitaSimples(arv.getDir()));
-			rotacao[0] = true;
-			return rotacaoEsquerdaSimples(arv);
-		}
-
-		return arv;
+	    return arv;
 	}
+
 
 	private int altura(No arv) {
 		if (arv == null)
@@ -290,7 +289,6 @@ public class AVL implements Serializable {
 	public void salvarArvoreEmArquivo(String caminhoArquivo) {
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(caminhoArquivo))) {
 			oos.writeObject(raiz);
-			System.out.println("Árvore salva com sucesso em " + caminhoArquivo);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -302,9 +300,7 @@ public class AVL implements Serializable {
         if (!arquivo.exists()) {
             try {
                 if (arquivo.createNewFile()) {
-                    System.out.println("Arquivo criado com sucesso: " + caminhoArquivo);
                 } else {
-                    System.out.println("Não foi possível criar o arquivo: " + caminhoArquivo);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -317,13 +313,10 @@ public class AVL implements Serializable {
              ObjectInputStream ois = new ObjectInputStream(fis)) {
             if (fis.available() > 0) {
                 raiz = (No) ois.readObject();
-                System.out.println("Árvore carregada com sucesso de " + caminhoArquivo);
             } else {
-                System.out.println("O arquivo está vazio. Nenhuma árvore para carregar.");
                 raiz = null; 
             }
         } catch (EOFException e) {
-            System.out.println("Arquivo vazio ou corrompido. Nenhuma árvore carregada.");
             raiz = null;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
